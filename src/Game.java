@@ -1,6 +1,7 @@
 import java.awt.Point;
 import java.util.*;
 
+
 public class Game {
     private final int gridSize = 10;
     private Target target;
@@ -93,7 +94,7 @@ public class Game {
             return false;
         }
 
-        command.execute(player);
+        processCommand(command);
 
         int x = player.getX();
         int y = player.getY();
@@ -115,18 +116,6 @@ public class Game {
         return false;}
 
 
-//     //   public static void printGrid(int size) {
-//        String horizontal = "*";
-//        for (int i = 0; i < size; i++) horizontal += "----*";
-//        String vertical = "|";
-//        for (int i = 0; i < size; i++) vertical += "    |";
-//
-//        for (int i = 0; i < size; i++) {
-//            System.out.println(horizontal);
-//            System.out.println(vertical);
-//        }
-//        System.out.println(horizontal);
-//    }
 
     private void printWelcome() {
         System.out.println("Welcome to the Mine Field!");
@@ -157,6 +146,60 @@ public class Game {
             System.out.println((i + 1) + ". " + commandHistory.get(i));
         }
     }
+//Play Methodu ile get command(Parser) callistirdim.
+// Eklendi 01012203
+    public void play()
+    {
+        printWelcome();
+
+        // Enter the main command loop.  Here we repeatedly read commands and
+        // execute them until the game is over.
+
+        boolean finished = false;
+        while (! finished) {
+            Command command = parser.getCommand();
+            finished = processCommand(command);
+        }
+        System.out.println("Thank you for playing.  Good bye.");
+    }
+    // Eklendi 01012203
+    private boolean processCommand(Command command) {
+        boolean wantToQuit = false;
+        CommandWord commandWord = command.getCommandWord();
+
+        switch (commandWord) {
+            case UNKNOWN:
+                System.out.println("I don't know what you mean...");
+                break;
+            case UP:
+                player.moveUp();
+                break;
+            case DOWN:
+                player.moveDown();
+                break;
+            case LEFT:
+                player.moveLeft();;
+                break;
+            case RIGHT:
+                player.moveRight();
+                break;
+            case TAKE:
+                take(command);
+                break;
+            case DROP:
+                drop(command);
+                break;
+                case GO:
+                goRoom(command);
+                break;
+            case QUIT:
+                wantToQuit = quit(command);
+                break;
+        }
+
+        return wantToQuit;
+    }
+// Eklendi
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
