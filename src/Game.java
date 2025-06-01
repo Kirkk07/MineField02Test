@@ -10,6 +10,7 @@ public class Game {
     private Random rand;
     private List<String> commandHistory;
     private boolean gameOver;
+    private Parser parser;
 
     public Game() {
         this.rand = new Random();
@@ -17,6 +18,7 @@ public class Game {
         this.mines = new ArrayList<>();
         this.commandHistory = new ArrayList<>();
         this.gameOver = false;
+        this.parser=new Parser();
     }
 
     public void startGame() {
@@ -94,7 +96,7 @@ public class Game {
             return false;
         }
 
-        processCommand(command);
+        command.execute(player);
 
         int x = player.getX();
         int y = player.getY();
@@ -148,20 +150,20 @@ public class Game {
     }
 //Play Methodu ile get command(Parser) callistirdim.
 // Eklendi 01012203
-    public void play()
-    {
-        printWelcome();
+public void play()
+{
+    printWelcome();
 
-        // Enter the main command loop.  Here we repeatedly read commands and
-        // execute them until the game is over.
+    // Enter the main command loop.  Here we repeatedly read commands and
+    // execute them until the game is over.
 
-        boolean finished = false;
-        while (! finished) {
-            Command command = parser.getCommand();
-            finished = processCommand(command);
-        }
-        System.out.println("Thank you for playing.  Good bye.");
+    boolean finished = false;
+    while (! finished) {
+        Command command = parser.getCommand();
+        //finished = processCommand(command);
     }
+    System.out.println("Thank you for playing.  Good bye.");
+}
     // Eklendi 01012203
     private boolean processCommand(Command command) {
         boolean wantToQuit = false;
@@ -183,18 +185,18 @@ public class Game {
             case RIGHT:
                 player.moveRight();
                 break;
-            case TAKE:
-                take(command);
-                break;
-            case DROP:
-                drop(command);
-                break;
-                case GO:
-                goRoom(command);
-                break;
-            case QUIT:
-                wantToQuit = quit(command);
-                break;
+//            case TAKE:
+//                take(command);
+//                break;
+//            case DROP:
+//                drop(command);
+//                break;
+//                case GO:
+//                goRoom(command);
+//                break;
+//            case QUIT:
+//                wantToQuit = quit(command);
+//                break;
         }
 
         return wantToQuit;
@@ -204,17 +206,20 @@ public class Game {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Game game = new Game();
+
         game.startGame();
+        game.play();
 
-        while (!game.isGameOver()) {
-            System.out.print("> ");
-            String input = scanner.nextLine().trim();
-            game.step(input);
-
-            if (!game.isGameOver()) {
-                System.out.println("Position: (" + game.getPlayer().getX() + ", " + game.getPlayer().getY() + ")");
-            }
-        }
+//        while (!game.isGameOver()) {
+//            System.out.print("> ");
+//            Command command = parser.getCommand().toString();
+//            String input = scanner.nextLine().trim();
+//            game.step(input);
+//
+//            if (!game.isGameOver()) {
+//                System.out.println("Position: (" + game.getPlayer().getX() + ", " + game.getPlayer().getY() + ")");
+//            }
+//        }
 
         game.showCommandHistory();
         scanner.close();
