@@ -104,7 +104,7 @@ public class Player {
     }
 
 
-    public boolean moveUp() {
+    public boolean moveLeft() {
         if (x > 0) {
             x--;
             return true;
@@ -114,7 +114,7 @@ public class Player {
         }
     }
 
-    public boolean moveDown() {
+    public boolean  moveRight(){
         if (x < 9) {
             x++;
             return true;
@@ -124,7 +124,7 @@ public class Player {
         }
     }
 
-    public boolean moveLeft() {
+    public boolean moveUp() {
         if (y > 0) {
             y--;
             return true;
@@ -134,7 +134,7 @@ public class Player {
         }
     }
 
-    public boolean moveRight() {
+    public boolean  moveDown() {
         if (y < 9) {
             y++;
             return true;
