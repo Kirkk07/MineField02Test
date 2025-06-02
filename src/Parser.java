@@ -5,6 +5,7 @@ import java.util.Scanner;
     public class Parser {
         private CommandWords commands;
         private Scanner reader;
+        private Game game;
 
         public Parser() {
             commands = new CommandWords();
@@ -29,6 +30,9 @@ import java.util.Scanner;
         public String showCommands() {
             return commands.showAll();
         }
+
+
+
     }
 
 

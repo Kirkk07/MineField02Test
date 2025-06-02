@@ -9,6 +9,9 @@ public class Game {
     private Random rand;
     private List<String> commandHistory;
     private boolean gameOver;
+    private Parser parser;
+    private Game game;
+    Scanner scanner = new Scanner(System.in);
 
     public Game() {
         this.rand = new Random();
@@ -16,6 +19,7 @@ public class Game {
         this.mines = new ArrayList<>();
         this.commandHistory = new ArrayList<>();
         this.gameOver = false;
+
     }
 
     public void startGame() {
@@ -23,6 +27,7 @@ public class Game {
         generateMines();
         printWelcome();
         drawMap(false);
+
     }
 
     public void generateTarget() {
@@ -157,12 +162,7 @@ public class Game {
             System.out.println((i + 1) + ". " + commandHistory.get(i));
         }
     }
-
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        Game game = new Game();
-        game.startGame();
-
+    public void play(){
         while (!game.isGameOver()) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
@@ -176,9 +176,31 @@ public class Game {
         game.showCommandHistory();
         scanner.close();
     }
-
     public boolean isGameOver() {
         return gameOver;
     }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Game game = new Game();
+        game.startGame();
+        Parser parser1=new Parser();
+
+        while (!game.isGameOver()) {
+            System.out.print("> ");
+            String input = scanner.nextLine().trim();
+            game.step(input);
+
+            if (!game.isGameOver()) {
+                System.out.println("Position: (" + game.getPlayer().getX() + ", " + game.getPlayer().getY() + ")");
+                System.out.println("Commands: "+parser1.showCommands());
+            }
+        }
+
+        game.showCommandHistory();
+        scanner.close();
+    }
+
+
 }
 
