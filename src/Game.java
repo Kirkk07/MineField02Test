@@ -9,8 +9,8 @@ public class Game {
     private Random rand;
     private List<String> commandHistory;
     private boolean gameOver;
-    private Parser parser;
-    private Game game;
+    private Parser parser=new Parser();
+
     Scanner scanner = new Scanner(System.in);
 
     public Game() {
@@ -21,12 +21,36 @@ public class Game {
         this.gameOver = false;
 
     }
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Game game = new Game();
+        game.startGame();
+       // game.play();
+        Parser parser1=new Parser();
+        System.out.println(game.isGameOver());
+
+//        while (!game.isGameOver()) {
+//            System.out.print("> ");
+//            String input = scanner.nextLine().trim();
+//            game.step(input);
+//
+//            if (!game.isGameOver()) {
+//                System.out.println("Position: (" + game.getPlayer().getX() + ", " + game.getPlayer().getY() + ")");
+//                System.out.println("Commands: "+parser1.showCommands());
+//                game.showCommandHistory();
+//            }
+//        }
+//
+//        game.showCommandHistory();
+//        scanner.close();
+    }
 
     public void startGame() {
         generateTarget();
         generateMines();
         printWelcome();
         drawMap(false);
+        play();
 
     }
 
@@ -47,14 +71,22 @@ public class Game {
         while (mines.size() < 8) {
             int x = rand.nextInt(gridSize);
             int y = rand.nextInt(gridSize);
+
             if ((x != 0 || y != 0) && (x != target.getX() || y != target.getY())) {
                 boolean exists = mines.stream().anyMatch(m -> m.getX() == x && m.getY() == y);
                 if (!exists) {
-                    mines.add(new Mine(x, y));
+                    Mine mine;
+                    if (rand.nextBoolean()) {
+                        mine = new SeaMine(x, y);
+                    } else {
+                        mine = new FieldMine(x, y);
+                    }
+                    mines.add(mine);
                 }
             }
         }
     }
+
 
     public boolean isMine(int x, int y) {
         return mines.stream().anyMatch(m -> m.getX() == x && m.getY() == y);
@@ -79,18 +111,10 @@ public class Game {
         System.out.println("Congratulations! You reached the target: " + target.getName());
     }
 
-    public Player getPlayer() {
-        return player;
-    }
-
-    public Target getTarget() {
-        return target;
-    }
 
 
     public boolean step(String move) {
         commandHistory.add(move);
-
         CommandWord command = CommandWord.fromString(move);
 
         if (command == CommandWord.UNKNOWN) {
@@ -98,13 +122,28 @@ public class Game {
             return false;
         }
 
-        command.execute(player);
+        boolean moved = command.execute(player);
+
+        if (!moved) {
+            return false; // Invalid move, skip surroundings check
+        }
 
         int x = player.getX();
         int y = player.getY();
 
         if (isMine(x, y)) {
-            System.out.println("Boom! You stepped on a mine. Game Over.");
+            Mine triggeredMine = mines.stream()
+                    .filter(m -> m.getX() == x && m.getY() == y)
+                    .findFirst()
+                    .orElse(null);
+
+            if (triggeredMine != null) {
+                System.out.println(triggeredMine.getDeathMessage());
+                drawMap(true);
+                gameOver = true;
+                return true;
+            }
+
             drawMap(true);
             gameOver = true;
             return true;
@@ -115,9 +154,62 @@ public class Game {
             drawMap(true);
             gameOver = true;
             return true;
-        }checkSurroundings();
+        }
+
+        checkSurroundings();
         drawMap(false);
-        return false;}
+        return false;
+    }
+
+    //Count mine.
+     public String getMineCountByType() {
+            int seaMineCount = 0;
+            int fieldMineCount = 0;
+
+            for (Mine mine : mines) {
+                if (mine instanceof SeaMine) {
+                    seaMineCount++;
+                } else if (mine instanceof FieldMine) {
+                    fieldMineCount++;
+                }
+            }
+            String returnMine="Sea Mines: " + seaMineCount+"\n"+"Field Mines: " + fieldMineCount;
+//            System.out.println("Sea Mines: " + seaMineCount);
+//            System.out.println("Field Mines: " + fieldMineCount);
+            return returnMine;
+        }
+
+
+//    public boolean step(String move) {
+//        commandHistory.add(move);
+//
+//        CommandWord command = CommandWord.fromString(move);
+//
+//        if (command == CommandWord.UNKNOWN) {
+//            System.out.println("Invalid command.");
+//            return false;
+//        }
+//
+//        command.execute(player);
+//
+//        int x = player.getX();
+//        int y = player.getY();
+//
+//        if (isMine(x, y)) {
+//            System.out.println("Boom! You stepped on a mine. Game Over.");
+//            drawMap(true);
+//            gameOver = true;
+//            return true;
+//        }
+//
+//        if (x == target.getX() && y == target.getY()) {
+//            finish();
+//            drawMap(true);
+//            gameOver = true;
+//            return true;
+//        }checkSurroundings();
+//        drawMap(false);
+//        return false;}
 
 
 //     //   public static void printGrid(int size) {
@@ -135,6 +227,7 @@ public class Game {
 
     private void printWelcome() {
         System.out.println("Welcome to the Mine Field!");
+        System.out.println(getMineCountByType());
         //printGrid(9);
     }
     public void drawMap(boolean revealMines) {
@@ -162,44 +255,32 @@ public class Game {
             System.out.println((i + 1) + ". " + commandHistory.get(i));
         }
     }
-    public void play(){
-        while (!game.isGameOver()) {
-            System.out.print("> ");
-            String input = scanner.nextLine().trim();
-            game.step(input);
-
-            if (!game.isGameOver()) {
-                System.out.println("Position: (" + game.getPlayer().getX() + ", " + game.getPlayer().getY() + ")");
-            }
-        }
-
-        game.showCommandHistory();
-        scanner.close();
-    }
     public boolean isGameOver() {
         return gameOver;
     }
+    public void play(){
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        Game game = new Game();
-        game.startGame();
-        Parser parser1=new Parser();
-
-        while (!game.isGameOver()) {
+        while (!isGameOver()) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
-            game.step(input);
+            step(input);
 
-            if (!game.isGameOver()) {
-                System.out.println("Position: (" + game.getPlayer().getX() + ", " + game.getPlayer().getY() + ")");
-                System.out.println("Commands: "+parser1.showCommands());
-            }
+            if (!isGameOver()) {
+                System.out.println("Position: (" + getPlayer().getX() + ", " + getPlayer().getY() + ")");
+                System.out.println("Commands: "+parser.showCommands());
+                showCommandHistory();
         }
 
-        game.showCommandHistory();
-        scanner.close();
+
+      //  scanner.close();
+    }}
+
+    public Player getPlayer() {
+        return player;
     }
+
+
+
 
 
 }

@@ -1,6 +1,7 @@
 public class Target {
     private String name;
     private int x, y;
+    private Target target;
 
     public Target(String name, int x, int y) {
         this.name = name;
@@ -18,6 +19,9 @@ public class Target {
 
     public int getY() {
         return y;
+    }
+    public Target getTarget() {
+        return target;
     }
 }
 
