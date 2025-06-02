@@ -252,8 +252,7 @@ public class Game {
                 }
             }
             String returnMine="Sea Mines: " + seaMineCount+"\n"+"Field Mines: " + fieldMineCount;
-//            System.out.println("Sea Mines: " + seaMineCount);
-//            System.out.println("Field Mines: " + fieldMineCount);
+
             return returnMine;
         }
 
