@@ -12,6 +12,8 @@ public class Game {
     private Parser parser=new Parser();
 
     Scanner scanner = new Scanner(System.in);
+    private List<Item>items;
+
 
     public Game() {
         this.rand = new Random();
@@ -19,6 +21,7 @@ public class Game {
         this.mines = new ArrayList<>();
         this.commandHistory = new ArrayList<>();
         this.gameOver = false;
+        this.items = new ArrayList<>();
 
     }
     public static void main(String[] args) {
@@ -48,9 +51,11 @@ public class Game {
     public void startGame() {
         generateTarget();
         generateMines();
+        generateItems();
         printWelcome();
         drawMap(false);
         play();
+
 
     }
 
@@ -86,6 +91,21 @@ public class Game {
             }
         }
     }
+    public void generateItems() {
+        while (items.size() < 3) {
+            int x = rand.nextInt(gridSize);
+            int y = rand.nextInt(gridSize);
+
+            // Avoid starting point, target, and existing items
+            boolean occupied = (x == 0 && y == 0) || (x == target.getX() && y == target.getY()) ||
+                    isMine(x, y) || items.stream().anyMatch(i -> i.getX() == x && i.getY() == y);
+
+            if (!occupied) {
+                items.add(new Item(x, y));
+            }
+        }
+    }
+
 
 
     public boolean isMine(int x, int y) {
@@ -111,8 +131,6 @@ public class Game {
         System.out.println("Congratulations! You reached the target: " + target.getName());
     }
 
-
-
     public boolean step(String move) {
         commandHistory.add(move);
         CommandWord command = CommandWord.fromString(move);
@@ -124,29 +142,40 @@ public class Game {
 
         boolean moved = command.execute(player);
 
-        if (!moved) {
-            return false; // Invalid move, skip surroundings check
-        }
+        if (!moved) return false;
 
         int x = player.getX();
         int y = player.getY();
 
-        if (isMine(x, y)) {
-            Mine triggeredMine = mines.stream()
-                    .filter(m -> m.getX() == x && m.getY() == y)
-                    .findFirst()
-                    .orElse(null);
+        // 🎁 Item alınmış mı?
+        Item item = items.stream()
+                .filter(i -> i.getX() == x && i.getY() == y && !i.isCollected())
+                .findFirst()
+                .orElse(null);
 
-            if (triggeredMine != null) {
+        if (item != null) {
+            item.collect();
+            player.giveProtection();
+            System.out.println("You found a protection item! You're safe from the next mine.");
+        }
+
+        // 💣 Mayına bastıysa
+        Mine triggeredMine = mines.stream()
+                .filter(m -> m.getX() == x && m.getY() == y)
+                .findFirst()
+                .orElse(null);
+
+        if (triggeredMine != null) {
+            if (player.hasProtection()) {
+                System.out.println("You stepped on a mine, but the protection item saved you!");
+                player.useProtection();
+                // Mine hala aktif kalabilir veya silinebilir, sana bağlı
+            } else {
                 System.out.println(triggeredMine.getDeathMessage());
                 drawMap(true);
                 gameOver = true;
                 return true;
             }
-
-            drawMap(true);
-            gameOver = true;
-            return true;
         }
 
         if (x == target.getX() && y == target.getY()) {
@@ -160,6 +189,55 @@ public class Game {
         drawMap(false);
         return false;
     }
+
+
+//    public boolean step(String move) {
+//        commandHistory.add(move);
+//        CommandWord command = CommandWord.fromString(move);
+//
+//        if (command == CommandWord.UNKNOWN) {
+//            System.out.println("Invalid command.");
+//            return false;
+//        }
+//
+//        boolean moved = command.execute(player);
+//
+//        if (!moved) {
+//            return false; // Invalid move, skip surroundings check
+//        }
+//
+//        int x = player.getX();
+//        int y = player.getY();
+//
+//        if (isMine(x, y)) {
+//            Mine triggeredMine = mines.stream()
+//                    .filter(m -> m.getX() == x && m.getY() == y)
+//                    .findFirst()
+//                    .orElse(null);
+//
+//            if (triggeredMine != null) {
+//                System.out.println(triggeredMine.getDeathMessage());
+//                drawMap(true);
+//                gameOver = true;
+//                return true;
+//            }
+//
+//            drawMap(true);
+//            gameOver = true;
+//            return true;
+//        }
+//
+//        if (x == target.getX() && y == target.getY()) {
+//            finish();
+//            drawMap(true);
+//            gameOver = true;
+//            return true;
+//        }
+//
+//        checkSurroundings();
+//        drawMap(false);
+//        return false;
+//    }
 
     //Count mine.
      public String getMineCountByType() {
@@ -238,7 +316,11 @@ public class Game {
                     System.out.print(" P ");
                 } else if (target.getX() == x && target.getY() == y) {
                     System.out.print(" T ");
-                } else if (revealMines && isMine(x, y)) {
+
+                } else if (!revealMines && hasUncollectedItemAt(x, y)) {
+                    System.out.print(" I ");}
+
+                else if (revealMines && isMine(x, y)) {
                     System.out.print(" * ");
                 } else {
                     System.out.print(" . ");
@@ -248,8 +330,17 @@ public class Game {
         }
         System.out.println();
     }
+        private boolean hasUncollectedItemAt(int x, int y) {
+            for (Item item : items) {
+                if (item.getX() == x && item.getY() == y && !item.isCollected()) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-    public void showCommandHistory() {
+
+        public void showCommandHistory() {
         System.out.println("\nCommand History:");
         for (int i = 0; i < commandHistory.size(); i++) {
             System.out.println((i + 1) + ". " + commandHistory.get(i));

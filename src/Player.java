@@ -83,11 +83,26 @@
 public class Player {
     private int x;
     private int y;
+    private boolean hasProtection = false;
+
 
     public Player() {
         this.x = 0;
         this.y = 0;
     }
+
+    public boolean hasProtection() {
+        return hasProtection;
+    }
+
+    public void giveProtection() {
+        hasProtection = true;
+    }
+
+    public void useProtection() {
+        hasProtection = false;
+    }
+
 
     public boolean moveUp() {
         if (x > 0) {
