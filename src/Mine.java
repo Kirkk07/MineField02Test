@@ -1,5 +1,4 @@
 public class Mine {
-
     private int x;
     private int y;
 
@@ -15,4 +14,10 @@ public class Mine {
     public int getY() {
         return y;
     }
+
+    // Bu metod subclass'lar tarafından override edilecek
+    public String getDeathMessage() {
+        return "You stepped on a mine!";
+    }
 }
+
